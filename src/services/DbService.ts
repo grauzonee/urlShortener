@@ -1,11 +1,8 @@
 import { MongoClient, Db } from "mongodb";
 import config from 'config'
 
-export function testFunction(): number {
-    return 1 + 2;
-}
 let mongoClient: MongoClient | null;
-let db: Db | null;
+let db: Db | null = null;
 
 export async function connectDb(): Promise<MongoClient> {
     if (!config.has("App.db.mongo.uri")) {
@@ -23,10 +20,15 @@ export async function connectDb(): Promise<MongoClient> {
     });
     await mongoClient.connect();
     db = mongoClient.db(dbName);
+    const redirects = db.collection('redirects');
+    await redirects.createIndex({ hash: 1 }, { unique: true });
     return mongoClient;
 }
 
-export function getDb(): Db | null {
+export function getDb(): Db {
+    if (db === null) {
+        throw new Error("Can't use DB before connection! Run connectDb() first!");
+    }
     return db;
 }
 export async function closeDb(): Promise<void> {
