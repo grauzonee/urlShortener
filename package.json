@@ -1,0 +1,28 @@
+{
+  "name": "urlshortener",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --detectOpenHandles",
+    "postinstall": "node-config-ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-typescript": "^7.27.1",
+    "@types/config": "^3.3.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.3",
+    "babel-jest": "^30.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "config": "^4.0.0",
+    "jest": "^30.0.2",
+    "mongodb": "^6.17.0"
+  }
+}
