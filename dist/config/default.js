@@ -1,4 +1,6 @@
-export default {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
     App: {
         baseUrl: "http://localhost:3000",
         db: {
@@ -8,4 +10,4 @@ export default {
             }
         }
     }
-}
+};

@@ -1,7 +1,9 @@
 import { getDb } from './DbService';
 import { createHash } from 'crypto';
+import config from 'config';
+import { MongoError } from 'mongodb';
 
-export async function createAlias(originalUrl: string): Promise<string> {
+export async function getShortUrl(originalUrl: string): Promise<URL> {
     if (!validateURL(originalUrl)) {
         throw new Error("Invalid URL!");
     }
@@ -11,11 +13,17 @@ export async function createAlias(originalUrl: string): Promise<string> {
     try {
         const redirectsCol = db.collection('redirects');
         await redirectsCol.insertOne({ originalUrl: originalUrl, hash: hash });
-        return hash;
-    } catch (error) {
-        if (error.code === 11000) {
-            return hash;
+        if (!config.has('App.baseUrl')) {
+            throw new Error('Property baseUrl is not set in the configuration file!');
         }
+        return new URL(hash, config.get('App.baseUrl'));
+    } catch (error) {
+        if (error instanceof MongoError) {
+            if (error.code === 11000) {
+                return new URL(hash, config.get('App.baseUrl'));
+            }
+        }
+
         throw error;
     }
 }
