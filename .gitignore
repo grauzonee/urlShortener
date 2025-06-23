@@ -1,2 +1,6 @@
-node_mudules/
+node_modules/
+dist/
 data
+jest.config.ts
+tsconfig.json
+babel.config.js
