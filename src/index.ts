@@ -5,8 +5,6 @@ import http from "http";
 import { parse } from "url";
 
 export const server = http.createServer(async (req, res) => {
-
-    console.log(req);
     const { pathname } = parse(req.url || '');
     if (req.method === 'POST' && pathname === '/api/shorten') {
         let body = '';
@@ -95,11 +93,10 @@ function setupShutdownHandlers() {
     });
 }
 
-console.log(require.main);
-if (require.main === module) {
-    start().catch(err => {
-        console.error('Failed to start server:', err);
-        process.exit(1);
-    });
-}
+
+start().catch(err => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+});
+
 
