@@ -8,8 +8,8 @@ jest.mock('config', () => ({
     get: jest.fn()
 }));
 
-test("db before connection should be null", () => {
-    expect(getDb()).rejects.toThrow("Can't use DB before connection! Run connectDb() first!");
+test("db before connection should throw an error", () => {
+    expect(() => getDb()).toThrow("Can't use DB before connection! Run connectDb() first!");
 });
 
 test("Connect to DB without configured URI should throw an exception", async () => {
@@ -27,7 +27,18 @@ test("Connect to DB without configured DB should throw an exception", async () =
 });
 
 test("Connection to DB should return MongoClient when configurations are OK", async () => {
-    expect.assertions(1)
+    (config.has as jest.Mock).mockImplementation((key: string) => {
+        return true;
+    });
+    (config.get as jest.Mock).mockImplementation((key: string) => {
+        if (key === "App.db.mongo.db") {
+            return "urlShortener";
+        }
+        if (key === "App.db.mongo.uri") {
+            return "mongodb://root:example@localhost:27017/urlShortener?authSource=admin";
+        }
+    });
+    expect.assertions(1);
     const conn = await connectDb();
     expect(conn).toBeInstanceOf(MongoClient);
 });
@@ -37,9 +48,8 @@ test("db after connection should not be null", () => {
     expect(db).toBeInstanceOf(Db);
 });
 
-test("Close connection", async () => {
+test("Close connection sets db to null", async () => {
     expect.assertions(1);
     await closeDb();
-    const db = getDb();
-    expect(db).toBeNull();
+    expect(() => getDb()).toThrow("Can't use DB before connection! Run connectDb() first!");
 }); 

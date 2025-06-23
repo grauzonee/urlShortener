@@ -6,7 +6,7 @@
     "build": "tsc",
     "dev": "NODE_OPTIONS='--loader ts-node/esm' node --trace-warnings src/index.ts",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "test": "jest --detectOpenHandles",
+    "test": "jest",
     "postinstall": "node-config-ts"
   },
   "author": "",
@@ -20,6 +20,8 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
     "babel-jest": "^30.0.2",
+    "jest": "^30.0.2",
+    "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
@@ -28,8 +30,8 @@
     "chalk": "^5.4.1",
     "config": "^4.0.0",
     "crypto": "^1.0.1",
-    "jest": "^30.0.2",
     "mongodb": "^6.17.0",
+    "supertest": "^7.1.1",
     "url": "^0.11.4"
   }
 }

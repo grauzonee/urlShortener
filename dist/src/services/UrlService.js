@@ -40,10 +40,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getShortUrl = getShortUrl;
+exports.getRedirectUrl = getRedirectUrl;
 var DbService_1 = require("./DbService");
 var crypto_1 = require("crypto");
 var config_1 = __importDefault(require("config"));
 var mongodb_1 = require("mongodb");
+// Create hash for an incoming url
 function getShortUrl(originalUrl) {
     return __awaiter(this, void 0, void 0, function () {
         var hash, db, redirectsCol, error_1;
@@ -79,6 +81,28 @@ function getShortUrl(originalUrl) {
         });
     });
 }
+// Find document in DB and create URL where use should be redirected to
+function getRedirectUrl(hash) {
+    return __awaiter(this, void 0, void 0, function () {
+        var cleanHash, db, redirects, dbEntity;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    cleanHash = hash.replace(/\//g, "");
+                    db = (0, DbService_1.getDb)();
+                    redirects = db.collection('redirects');
+                    return [4 /*yield*/, redirects.findOne({ hash: cleanHash })];
+                case 1:
+                    dbEntity = _a.sent();
+                    if (dbEntity) {
+                        return [2 /*return*/, new URL(dbEntity.originalUrl)];
+                    }
+                    return [2 /*return*/, new URL('/not-found', config_1.default.get('App.baseUrl'))];
+            }
+        });
+    });
+}
+// Helper function to validate incoming URL
 function validateURL(url) {
     try {
         new URL(url);

@@ -1,12 +1,12 @@
-console.log('here');
 import { connectDb, getDb, closeDb } from './services/DbService';
-import { getShortUrl } from './services/UrlService';
+import { getShortUrl, getRedirectUrl } from './services/UrlService';
 import chalk from "chalk";
 import http from "http";
 import { parse } from "url";
 
-const server = http.createServer(async (req, res) => {
+export const server = http.createServer(async (req, res) => {
 
+    console.log(req);
     const { pathname } = parse(req.url || '');
     if (req.method === 'POST' && pathname === '/api/shorten') {
         let body = '';
@@ -16,22 +16,30 @@ const server = http.createServer(async (req, res) => {
         req.on('end', async () => {
             try {
                 const data = JSON.parse(body);
-                console.log("Received data:");
-                console.log(data);
                 if (!data.url) {
                     res.writeHead(400, { 'Content-Type': 'application/json' });
-                    return res.end(JSON.stringify({ error: "Missing 'url' property" }));
+                    res.end(JSON.stringify({ error: "Missing 'url' property" }));
                 }
                 const newUrl = await getShortUrl(data.url);
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, data: newUrl.toString() }))
             } catch (error) {
+                console.error("Error occurred in try: ", error);
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 if (error instanceof Error) {
                     return res.end(JSON.stringify({ error: "Some error occured on the server, please try later" + error.message }));
                 }
             }
         });
+    }
+    if (req.method === 'GET' && pathname === '/not-found') {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ message: "Sorry, this URL is invalid..." }));
+    }
+    if (req.method === 'GET' && pathname !== '') {
+        const redirectUrl = await getRedirectUrl(pathname);
+        res.writeHead(302, { Location: redirectUrl.toString() });
+        res.end('You are being redirected..');
     }
 });
 const PORT = 3000;
@@ -87,8 +95,11 @@ function setupShutdownHandlers() {
     });
 }
 
-start().catch(err => {
-    console.error('Failed to start server:', err);
-    process.exit(1);
-});
+console.log(require.main);
+if (require.main === module) {
+    start().catch(err => {
+        console.error('Failed to start server:', err);
+        process.exit(1);
+    });
+}
 

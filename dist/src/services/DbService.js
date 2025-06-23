@@ -46,6 +46,7 @@ var mongodb_1 = require("mongodb");
 var config_1 = __importDefault(require("config"));
 var mongoClient;
 var db = null;
+// Function that creates DB connection and should be used only once
 function connectDb() {
     return __awaiter(this, void 0, void 0, function () {
         var uri, dbName, redirects;
@@ -78,12 +79,14 @@ function connectDb() {
         });
     });
 }
+// Helper function to get connection anywhere needed
 function getDb() {
     if (db === null) {
         throw new Error("Can't use DB before connection! Run connectDb() first!");
     }
     return db;
 }
+// Close DB connection
 function closeDb() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {

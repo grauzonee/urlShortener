@@ -46,8 +46,8 @@ jest.mock('config', function () { return ({
     has: jest.fn(),
     get: jest.fn()
 }); });
-test("db before connection should be null", function () {
-    expect((0, DbService_1.getDb)()).rejects.toThrow("Can't use DB before connection! Run connectDb() first!");
+test("db before connection should throw an error", function () {
+    expect(function () { return (0, DbService_1.getDb)(); }).toThrow("Can't use DB before connection! Run connectDb() first!");
 });
 test("Connect to DB without configured URI should throw an exception", function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -82,6 +82,17 @@ test("Connection to DB should return MongoClient when configurations are OK", fu
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                config_1.default.has.mockImplementation(function (key) {
+                    return true;
+                });
+                config_1.default.get.mockImplementation(function (key) {
+                    if (key === "App.db.mongo.db") {
+                        return "urlShortener";
+                    }
+                    if (key === "App.db.mongo.uri") {
+                        return "mongodb://root:example@localhost:27017/urlShortener?authSource=admin";
+                    }
+                });
                 expect.assertions(1);
                 return [4 /*yield*/, (0, DbService_1.connectDb)()];
             case 1:
@@ -95,8 +106,7 @@ test("db after connection should not be null", function () {
     var db = (0, DbService_1.getDb)();
     expect(db).toBeInstanceOf(mongodb_1.Db);
 });
-test("Close connection", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var db;
+test("Close connection sets db to null", function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -104,8 +114,7 @@ test("Close connection", function () { return __awaiter(void 0, void 0, void 0, 
                 return [4 /*yield*/, (0, DbService_1.closeDb)()];
             case 1:
                 _a.sent();
-                db = (0, DbService_1.getDb)();
-                expect(db).toBeNull();
+                expect(function () { return (0, DbService_1.getDb)(); }).toThrow("Can't use DB before connection! Run connectDb() first!");
                 return [2 /*return*/];
         }
     });

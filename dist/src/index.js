@@ -39,48 +39,67 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-console.log('here');
+exports.server = void 0;
 var DbService_1 = require("./services/DbService");
 var UrlService_1 = require("./services/UrlService");
 var chalk_1 = __importDefault(require("chalk"));
 var http_1 = __importDefault(require("http"));
 var url_1 = require("url");
-var server = http_1.default.createServer(function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var pathname, body_1;
+exports.server = http_1.default.createServer(function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var pathname, body_1, redirectUrl;
     return __generator(this, function (_a) {
-        pathname = (0, url_1.parse)(req.url || '').pathname;
-        if (req.method === 'POST' && pathname === '/api/shorten') {
-            body_1 = '';
-            req.on('data', function (chunk) {
-                body_1 += chunk.toString();
-            });
-            req.on('end', function () { return __awaiter(void 0, void 0, void 0, function () {
-                var data, newUrl, error_1;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            _a.trys.push([0, 2, , 3]);
-                            data = JSON.parse(body_1);
-                            if (!data.url) {
-                                res.writeHead(400, { 'Content-Type': 'application/json' });
-                                return [2 /*return*/, res.end(JSON.stringify({ error: "Missing 'url' property" }))];
+        switch (_a.label) {
+            case 0:
+                console.log(req);
+                pathname = (0, url_1.parse)(req.url || '').pathname;
+                if (req.method === 'POST' && pathname === '/api/shorten') {
+                    body_1 = '';
+                    req.on('data', function (chunk) {
+                        body_1 += chunk.toString();
+                    });
+                    req.on('end', function () { return __awaiter(void 0, void 0, void 0, function () {
+                        var data, newUrl, error_1;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 2, , 3]);
+                                    data = JSON.parse(body_1);
+                                    if (!data.url) {
+                                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                                        res.end(JSON.stringify({ error: "Missing 'url' property" }));
+                                    }
+                                    return [4 /*yield*/, (0, UrlService_1.getShortUrl)(data.url)];
+                                case 1:
+                                    newUrl = _a.sent();
+                                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                                    res.end(JSON.stringify({ success: true, data: newUrl.toString() }));
+                                    return [3 /*break*/, 3];
+                                case 2:
+                                    error_1 = _a.sent();
+                                    console.error("Error occurred in try: ", error_1);
+                                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                                    if (error_1 instanceof Error) {
+                                        return [2 /*return*/, res.end(JSON.stringify({ error: "Some error occured on the server, please try later" + error_1.message }))];
+                                    }
+                                    return [3 /*break*/, 3];
+                                case 3: return [2 /*return*/];
                             }
-                            return [4 /*yield*/, (0, UrlService_1.getShortUrl)(data.url)];
-                        case 1:
-                            newUrl = _a.sent();
-                            res.writeHead(200, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({ success: true, data: newUrl.toString() }));
-                            return [3 /*break*/, 3];
-                        case 2:
-                            error_1 = _a.sent();
-                            res.writeHead(500, { 'Content-Type': 'application/json' });
-                            return [2 /*return*/, res.end(JSON.stringify({ error: "Some error occured on the server, please ty later" }))];
-                        case 3: return [2 /*return*/];
-                    }
-                });
-            }); });
+                        });
+                    }); });
+                }
+                if (req.method === 'GET' && pathname === '/not-found') {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    return [2 /*return*/, res.end(JSON.stringify({ message: "Sorry, this URL is invalid..." }))];
+                }
+                if (!(req.method === 'GET' && pathname !== '')) return [3 /*break*/, 2];
+                return [4 /*yield*/, (0, UrlService_1.getRedirectUrl)(pathname)];
+            case 1:
+                redirectUrl = _a.sent();
+                res.writeHead(302, { Location: redirectUrl.toString() });
+                res.end('You are being redirected..');
+                _a.label = 2;
+            case 2: return [2 /*return*/];
         }
-        return [2 /*return*/];
     });
 }); });
 var PORT = 3000;
@@ -92,9 +111,10 @@ function start() {
                 case 0: return [4 /*yield*/, (0, DbService_1.connectDb)()];
                 case 1:
                     _a.sent();
-                    server.listen(PORT, function () {
+                    exports.server.listen(PORT, function () {
                         console.log("Listening on port " + PORT);
                     });
+                    setupShutdownHandlers();
                     return [2 /*return*/];
             }
         });
@@ -109,7 +129,7 @@ function gracefulShutdown() {
                     console.log("Starting graceful shutdown...");
                     shutdownPromises = [];
                     shutdownPromises.push(new Promise(function (resolve) {
-                        server.close(function () {
+                        exports.server.close(function () {
                             console.log("Server was successfully stopped");
                             resolve();
                         });
@@ -167,6 +187,10 @@ function setupShutdownHandlers() {
         });
     }); });
 }
-server.listen(3000, function () {
-    console.log("Server running on port 3000");
-});
+console.log(require.main);
+if (require.main === module) {
+    start().catch(function (err) {
+        console.error('Failed to start server:', err);
+        process.exit(1);
+    });
+}

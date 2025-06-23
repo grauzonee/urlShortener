@@ -4,6 +4,7 @@ import config from 'config'
 let mongoClient: MongoClient | null;
 let db: Db | null = null;
 
+// Function that creates DB connection and should be used only once
 export async function connectDb(): Promise<MongoClient> {
     if (!config.has("App.db.mongo.uri")) {
         throw new Error("Mongo URI is not configured!");
@@ -25,12 +26,15 @@ export async function connectDb(): Promise<MongoClient> {
     return mongoClient;
 }
 
+// Helper function to get connection anywhere needed
 export function getDb(): Db {
     if (db === null) {
         throw new Error("Can't use DB before connection! Run connectDb() first!");
     }
     return db;
 }
+
+// Close DB connection
 export async function closeDb(): Promise<void> {
     if (!mongoClient) {
         throw new Error("Connection has not been established, please run connectDb() first");
