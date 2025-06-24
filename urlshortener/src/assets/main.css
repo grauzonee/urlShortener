@@ -1,0 +1,33 @@
+@import './base.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --emerald: #058743;
+}
+#app {
+    width: 100%;
+    font-weight: normal;
+}
+
+a,
+.beige {
+  text-decoration: none;
+  color: #FFE3A9;
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    margin-top: 2rem;
+    display: flex;
+  }
+}

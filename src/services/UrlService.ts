@@ -38,6 +38,9 @@ export async function getRedirectUrl(hash: string): Promise<URL> {
     if (dbEntity) {
         return new URL(dbEntity.originalUrl);
     }
+    if (config.has('App.notFoundUrl')) {
+        return new URL(config.get('App.notFoundUrl'));
+    }
     return new URL('/not-found', config.get('App.baseUrl'));
 }
 

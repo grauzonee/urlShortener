@@ -3,6 +3,7 @@ import { getShortUrl, getRedirectUrl } from './services/UrlService';
 import chalk from "chalk";
 import http from "http";
 import { parse } from "url";
+import cors from 'cors';
 
 export const server = http.createServer(async (req, res) => {
     const { pathname } = parse(req.url || '');
@@ -37,8 +38,19 @@ export const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && pathname !== '') {
         const redirectUrl = await getRedirectUrl(pathname);
         res.writeHead(302, { Location: redirectUrl.toString() });
-        res.end('You are being redirected..');
+        return res.end('You are being redirected..');
     }
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204, {
+            'Access-Control-Allow-Origin': '*', // Or restrict to Vue URL
+            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '86400',
+        })
+        return res.end()
+    }
+    res.setHeader('Access-Control-Allow-Origin', '*') // Or use 'http://localhost:5173'
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 });
 const PORT = 3000;
 const SHUTDOWN_TIMEOUT = 10000;
